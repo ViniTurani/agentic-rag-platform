@@ -1,0 +1,44 @@
+{
+  "folders": [
+    {
+      "name": "agentic-rag-workspace",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "[python]": {
+      "editor.formatOnSave": true,
+      "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit",
+        "source.organizeImports": "explicit"
+      },
+      "editor.defaultFormatter": "charliermarsh.ruff"
+    },
+    "files.associations": {
+      "*.env": "properties"
+    },
+    "editor.fontFamily": "'Fira Code', 'Droid Sans Mono', 'monospace'",
+    "editor.unicodeHighlight.nonBasicASCII": true,
+    "editor.renderControlCharacters": true,
+    "editor.rulers": [88],
+    "cSpell.words": ["Embedder", "MILVUS", "vectordb"],
+
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.autoSearchPaths": true,
+    "python.analysis.useLibraryCodeForTypes": true,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 88
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [],
+    "compounds": []
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-python.python",
+      "ms-python.vscode-pylance",
+      "charliermarsh.ruff"
+    ]
+  }
+}

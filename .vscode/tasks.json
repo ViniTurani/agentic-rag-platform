@@ -1,0 +1,42 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "compose-up api",
+      "type": "shell",
+      "isBackground": true,
+      "command": "docker compose -f ./docker-compose.yaml --env-file environments/.env up --build --remove-orphans api-debug --watch",
+      "problemMatcher": {
+        "owner": "compose",
+        "pattern": [{ "regexp": "." }],
+        "background": {
+          "endsPattern": "Waiting for client to attach"
+        }
+      },
+
+      "runOptions": { "reevaluateOnRerun": true }
+    }
+    // {
+    //   "label": "compose-up api-tests",
+    //   "type": "shell",
+    //   "isBackground": true,
+    //   "command": "docker compose -f ./docker-compose.yaml --env-file environments/.env run --build --remove-orphans --service-ports api-tests-debug --watch",
+    //   "problemMatcher": {
+    //     "owner": "compose",
+    //     "pattern": [{ "regexp": "." }],
+    //     "background": {
+    //       "endsPattern": "Waiting for client to attach"
+    //     }
+    //   },
+    //   "presentation": { "reveal": "always", "panel": "dedicated" },
+    //   "runOptions": { "reevaluateOnRerun": true }
+    // },
+
+    // {
+    //   "label": "compose-stop api-tests",
+    //   "type": "shell",
+    //   "command": "docker compose -f ./docker-compose.yaml --env-file environments/.env down --remove-orphans --volumes",
+    //   "problemMatcher": []
+    // }
+  ]
+}

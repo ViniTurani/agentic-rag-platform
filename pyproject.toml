@@ -1,0 +1,39 @@
+[project]
+name = "agentic-rag-platform"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.113.0",
+    "loguru>=0.7.3",
+    "openai>=1.40.0,<2.0.0",
+    "pandas>=2.3.2",
+    "pdfplumber>=0.11.7",
+    "pillow>=11.3.0",
+    "prometheus-client>=0.23.1",
+    "pydantic>=2.7.0,<3.0.0",
+    "pydantic-settings>=2.11.0",
+    "pymilvus>=2.6.2",
+    "pymongo>=4.15.1",
+    "pymupdf>=1.26.4",
+    "pymupdf4llm>=0.0.27",
+    "pytesseract>=0.3.13",
+    "python-multipart>=0.0.20",
+    "streamlit>=1.50.0",
+    "uvicorn>=0.37.0",
+]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+
+select = ["E", "F"]
+extend-select = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "tab"
+line-ending = "auto"
+skip-magic-trailing-comma = false
