@@ -114,6 +114,8 @@ ipython_config.py
 #   https://pdm-project.org/en/latest/usage/project/#working-with-version-control
 #pdm.lock
 #pdm.toml
+
+volumes/
 .pdm-python
 .pdm-build/
 

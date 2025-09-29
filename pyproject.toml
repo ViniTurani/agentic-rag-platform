@@ -1,5 +1,5 @@
 [project]
-name = "agentic-rag-platform"
+name = "agentic_rag_platform"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
