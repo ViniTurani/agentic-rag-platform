@@ -80,15 +80,18 @@ services:
     container_name: agentic-rag
     env_file: ./environments/.env
     depends_on:
-      - mongo
-      - milvus
+      mongo:
+        condition: service_started
+      milvus:
+        condition: service_healthy
     networks:
       - my-network
     develop:
       watch:
         - path: ./app
           action: sync
-          target: ./app
+          target: /project/app
+
 
   api-debug:
     extends:
@@ -98,8 +101,7 @@ services:
     ports:
       - "5678:5678"
       - "8000:8000"
-    networks:
-      - my-network
+    restart: unless-stopped
 
 volumes:
   etcd-data:

@@ -1,5 +1,4 @@
 # syntax=docker/dockerfile:1
-
 ARG PYTHON_VERSION=3.13
 ARG PYTHON_IMAGE_TAG=python:${PYTHON_VERSION}-slim
 ARG UID=1000
@@ -18,44 +17,51 @@ ENV \
   PIP_NO_CACHE_DIR=1 \
   VIRTUAL_ENV=${VIRTUAL_ENV} \
   PATH="${VIRTUAL_ENV}/bin:${PATH}" \
-  # Tesseract tessdata path (default for Debian packages)
   TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata
 
-# Create non-root user and install system deps (incl. Tesseract + langs)
+# deps de sistema (inclui curl pro instalador do uv)
 RUN adduser --disabled-password --gecos '' --uid ${UID} ${USERNAME} \
   && apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-     git \
-     tesseract-ocr \
-     tesseract-ocr-eng \
-     tesseract-ocr-por \
-     tesseract-ocr-spa \
-     # runtime libs used by PyMuPDF/Pillow in many setups
-     libglib2.0-0 \
-     libgl1 \
+     ca-certificates curl git \
+     tesseract-ocr tesseract-ocr-eng tesseract-ocr-por tesseract-ocr-spa \
+     libglib2.0-0 libgl1 \
   && rm -rf /var/lib/apt/lists/*
 
 USER ${USERNAME}
-WORKDIR /app
 
+# instala uv (binário em ~/.cargo/bin/uv)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/home/${USERNAME}/.local/bin:${PATH}"
+# evita hardlinks/symlinks problemáticos em overlayfs
+ENV UV_LINK_MODE=copy
 
-# Build dev virtualenv
+# diretório de projeto dedicado (sem varrer /)
+WORKDIR /project
+
+# ---------- Build dev com uv ----------
 FROM base AS build-development
-RUN python -m venv "${VIRTUAL_ENV}" \
-  && "${VIRTUAL_ENV}/bin/python" -m pip install --upgrade pip setuptools wheel
-COPY --chown=${USERNAME}:${USERNAME} ./pyproject.toml ./pyproject.toml
-COPY --chown=${USERNAME}:${USERNAME} ./app ./app
-RUN "${VIRTUAL_ENV}/bin/python" -m pip install -e . \
-  && "${VIRTUAL_ENV}/bin/python" -m pip install debugpy
 
-# Local runtime image
+# copie manifesto + lock + código
+COPY --chown=${USERNAME}:${USERNAME} ./pyproject.toml /project/pyproject.toml
+COPY --chown=${USERNAME}:${USERNAME} ./uv.lock        /project/uv.lock
+COPY --chown=${USERNAME}:${USERNAME} ./app            /project/app
+
+# cria/atualiza a venv em /project/.venv e instala deps + o próprio projeto (editable)
+RUN uv sync --frozen --no-dev --project /project
+
+# instala debugpy NA MESMA VENV
+RUN uv pip install --python /project/.venv/bin/python --system debugpy
+
+# ---------- Runtime local ----------
 FROM base AS local
-COPY --from=build-development --chown=${USERNAME}:${USERNAME} ${VIRTUAL_ENV} ${VIRTUAL_ENV}
-COPY --chown=${USERNAME}:${USERNAME} ./pyproject.toml ./pyproject.toml
-COPY --chown=${USERNAME}:${USERNAME} ./app ./app
+COPY --from=build-development --chown=${USERNAME}:${USERNAME} /project /project
 
-# Debug image
+# garanta que usamos a venv do projeto por padrão
+ENV PATH="/project/.venv/bin:${PATH}"
+
+# ---------- Debug ----------
 FROM local AS debug
-WORKDIR /app
+WORKDIR /project
 EXPOSE 5678
 CMD ["python", "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", "-m", "app"]

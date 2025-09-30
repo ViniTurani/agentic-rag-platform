@@ -37,3 +37,10 @@ quote-style = "double"
 indent-style = "tab"
 line-ending = "auto"
 skip-magic-trailing-comma = false
+
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["app"]

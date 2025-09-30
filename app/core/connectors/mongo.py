@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import TypeAlias
 
 from loguru import logger
 from pymongo import MongoClient
@@ -9,7 +9,7 @@ from ...settings import Settings
 setts = Settings.get()
 
 
-T = TypeVar("T", bound=Document)
+T: TypeAlias = Document
 
 
 class MongoHelper:

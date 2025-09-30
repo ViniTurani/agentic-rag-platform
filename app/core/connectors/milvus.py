@@ -4,10 +4,6 @@ from typing import List
 import httpx
 from loguru import logger
 
-from app.rag.schemas import Chunk, EmbeddedChunk, FailedChunk, IndexingResult
-
-from app.settings import Settings
-from app.core.pdf_uploader.embedder import AsyncEmbedder
 from app.core.metrics import (
 	MILVUS_INSERT_BATCHES,
 	MILVUS_INSERT_ERRORS,
@@ -15,6 +11,9 @@ from app.core.metrics import (
 	SEARCH_REQUESTS,
 	observe,
 )
+from app.core.pdf_uploader.embedder import AsyncEmbedder
+from app.rag.schemas import Chunk, EmbeddedChunk, FailedChunk, IndexingResult
+from app.settings import Settings
 
 
 class MilvusInsert:

@@ -6,19 +6,19 @@ from fastapi import HTTPException, UploadFile
 from loguru import logger
 from pymupdf import open as pdf_open
 
-from app.rag.models import ChunkDAO, FileDAO
-from app.rag.schemas import Chunk, IndexingResult
-
 from app.core.connectors.milvus import MilvusInsert
 from app.core.connectors.mongo import MongoHelper
-from .embedder import AsyncEmbedder
 from app.core.metrics import (
 	INGEST_CHUNKS,
 	INGEST_DUPLICATES,
 	INGEST_FILES,
 	observe,
 )
+from app.rag.models import ChunkDAO, FileDAO
+from app.rag.schemas import Chunk, IndexingResult
+
 from .chunkifier import chunkfy_pages
+from .embedder import AsyncEmbedder
 from .parser import markdown_parse
 
 mongo_client = MongoHelper()

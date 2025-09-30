@@ -6,16 +6,10 @@
       "type": "debugpy",
       "request": "attach",
       "justMyCode": false,
-      "connect": {
-        "host": "localhost",
-        "port": 5678,
-        "connectTimeout": 40000
-      },
+      "connect": { "host": "localhost", "port": 5678, "connectTimeout": 40000 },
       "pathMappings": [
-        {
-          "localRoot": "./app",
-          "remoteRoot": "./app"
-        }
+        { "localRoot": "${workspaceFolder}/app", "remoteRoot": "/project/app" },
+        { "localRoot": "/workspaces/agentic-rag-platform/app", "remoteRoot": "/project/app" }
       ],
       "preLaunchTask": "compose-up api"
     }

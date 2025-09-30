@@ -8,9 +8,14 @@
       "command": "docker compose -f ./docker-compose.yaml --env-file environments/.env up --build --remove-orphans api-debug --watch",
       "problemMatcher": {
         "owner": "compose",
-        "pattern": [{ "regexp": "." }],
+        "pattern": {
+          "regexp": "^(.*)$",
+          "file": 1
+        },
         "background": {
-          "endsPattern": "Waiting for client to attach"
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": "Waiting for client to attach|Uvicorn running on|Application startup complete"
         }
       },
 
@@ -23,8 +28,13 @@
     //   "command": "docker compose -f ./docker-compose.yaml --env-file environments/.env run --build --remove-orphans --service-ports api-tests-debug --watch",
     //   "problemMatcher": {
     //     "owner": "compose",
-    //     "pattern": [{ "regexp": "." }],
+    //     "pattern": {
+    //       "regexp": "^(.*)$",
+    //       "file": 1
+    //     },
     //     "background": {
+    //       "activeOnStart": true,
+    //       "beginsPattern": ".*",
     //       "endsPattern": "Waiting for client to attach"
     //     }
     //   },
