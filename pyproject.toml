@@ -8,6 +8,7 @@ dependencies = [
     "fastapi>=0.113.0",
     "loguru>=0.7.3",
     "openai>=1.40.0,<2.0.0",
+    "openai-agents>=0.3.2",
     "pandas>=2.3.2",
     "pdfplumber>=0.11.7",
     "pillow>=11.3.0",
@@ -20,6 +21,7 @@ dependencies = [
     "pymupdf4llm>=0.0.27",
     "pytesseract>=0.3.13",
     "python-multipart>=0.0.20",
+    "pyyaml>=6.0.3",
     "streamlit>=1.50.0",
     "uvicorn>=0.37.0",
 ]

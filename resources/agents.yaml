@@ -1,0 +1,55 @@
+model_defaults:
+  provider: openai
+  model: gpt-4o-mini
+  temperature: 0.2
+  max_turns: 8
+
+entry_agent: router
+
+tools:
+  - name: web_search
+    kind: hosted
+    type: WebSearchTool
+    config: { max_num_results: 3 }
+
+  - name: kb_retrieve
+    kind: python_function
+    dotted_path: app.core.agents.tools.kb:kb_retrieve
+
+  - name: get_customer
+    kind: custom_json_schema
+    implementation: app.core.agents.tools.support:get_customer_impl
+    schema:
+      title: get_customer_args
+      type: object
+      properties:
+        user_id: { type: string }
+      required: [user_id]
+
+  - name: create_ticket
+    kind: custom_json_schema
+    implementation: app.core.agents.tools.support:create_ticket_impl
+    schema:
+      title: create_ticket_args
+      type: object
+      properties:
+        user_id: { type: string }
+        subject: { type: string }
+        description: { type: string }
+      required: [user_id, subject, description]
+
+agents:
+  - name: router
+    prompt_file: resources/prompts/router_agent.md
+    tool_refs: [web_search]
+    handoffs: [knowledge, support]
+
+  - name: knowledge
+    prompt_file: resources/prompts/knowledge_agent.md
+    tool_refs: [web_search, kb_retrieve]
+    handoffs: []
+
+  - name: support
+    prompt_file: resources/prompts/customer_support_agent.md
+    tool_refs: [get_customer, create_ticket]
+    handoffs: []
