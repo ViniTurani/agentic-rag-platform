@@ -40,11 +40,14 @@ def _ocr_page(
 def markdown_parse(
 	doc: Document, ocr_lang: str = "por+eng+spa", dpi: int = 300
 ) -> list[dict]:
-	md: list[dict] = to_markdown(
+	# to_markdown may return a string (single-page markdown) or a list of page dicts;
+	raw_md = to_markdown(
 		doc,
 		page_chunks=True,
 		embed_images=False,
 	)
+
+	md: list[dict] = [{"text": raw_md}]  # TODO review this line
 
 	for i, page_obj in enumerate(md):
 		txt = page_obj.get("text") or page_obj.get("content") or ""

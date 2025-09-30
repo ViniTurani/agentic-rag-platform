@@ -54,7 +54,8 @@ async def upload_pdf_documents(files: list[UploadFile]):
 	):  # all chunks failed
 		# remove everything from mongo that was just added
 		logger.warning(
-			"Trying to remove everything that was just added due to failures on all milvus insertion for the chunks."
+			"Trying to remove everything that was just"
+			" added due to failures on all milvus insertion for the chunks."
 		)
 		file_id = res.inserted_file_id
 		if not file_id:
@@ -62,7 +63,10 @@ async def upload_pdf_documents(files: list[UploadFile]):
 		else:
 			delete_file_and_chunks(file_id)
 
-		msg = "All chunks failed to be indexed; the file and its chunks were removed from mongo."
+		msg = (
+			"All chunks failed to be indexed; "
+			"the file and its chunks were removed from mongo."
+		)
 
 	return UploadResponse(
 		message=msg,
@@ -93,7 +97,6 @@ async def hybrid_search(
 		sparse_weight=sparse_weight,
 		limit=top_k,
 	)
-	logger.critical(f"Raw milvus response: {raw}")
 	# Normalize Milvus response: expected shape includes top-level 'data' list already
 	hits = []
 

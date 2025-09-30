@@ -6,6 +6,7 @@ from loguru import logger
 from .settings import Settings
 
 setts = Settings.get()
+
 DEFAULT_DB = "default"
 DIMENSIONS = 1536  # default for the embedding model used on the application
 

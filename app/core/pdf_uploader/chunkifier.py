@@ -14,7 +14,7 @@ def _strip_md_images(text: str) -> str:
 
 
 def _unhyphenate(text: str) -> str:
-	# join words broken by hyphenation at line breaks: "lubrifi-\ncação" -> "lubrificação"
+	# join words: "inter-\ncação"->"interação"
 	text = re.sub(r"(\w)-\s*\n\s*(\w)", r"\1\2", text or "")
 	return text.replace("\r", "")
 
