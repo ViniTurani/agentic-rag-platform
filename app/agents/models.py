@@ -1,7 +1,7 @@
 from typing import Literal
 
 from beanie import Document, PydanticObjectId
-from core.db.timestamps import TimestampingMixin
+from app.core.db.timestamps import TimestampingMixin
 
 from .schemas import Message, Thread
 
