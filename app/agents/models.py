@@ -1,42 +1,22 @@
-from datetime import datetime
+from typing import Literal
 
-from app.rag.models import Document
+from beanie import Document, PydanticObjectId
+from core.db.timestamps import TimestampingMixin
 
-
-class RunLogDAO(Document):
-	session_id: str
-	agent: str
-	user_id: str
-	input_text: str
-	output_text: str
-	trace_id: str | None = None
-	created_at: datetime = datetime.utcnow()
-
-	@classmethod
-	def get_collection_name(cls) -> str:
-		return "agent_runs"
+from .schemas import Message, Thread
 
 
-class TicketDAO(Document):
-	ticket_id: str
-	user_id: str
-	subject: str
-	description: str
-	status: str = "open"
-	created_at: datetime = datetime.utcnow()
+class ThreadDAO(Thread, TimestampingMixin, Document):
+	status: Literal["active", "archived", "closed"] = "active"
+	created_by: str
+	messages: list[PydanticObjectId] = []
 
-	@classmethod
-	def get_collection_name(cls) -> str:
-		return "tickets"
+	class Settings:
+		name = "threads"
 
 
-class CustomerDAO(Document):
-	user_id: str
-	name: str | None = None
-	email: str | None = None
-	plan: str | None = None
-	updated_at: datetime = datetime.utcnow()
+class MessageDAO(Message, TimestampingMixin, Document):
+	thread_id: PydanticObjectId
 
-	@classmethod
-	def get_collection_name(cls) -> str:
-		return "customers"
+	class Settings:
+		name = "messages"

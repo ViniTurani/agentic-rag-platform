@@ -1,52 +1,84 @@
-from __future__ import annotations
 import json
 from typing import Any
-from agents import RunContextWrapper
+
 from loguru import logger
+from pydantic import BaseModel, Field
 
-from app.core.pdf_uploader.embedder import AsyncEmbedder
+from agents import RunContextWrapper
 from app.core.connectors.milvus import MilvusSearch
+from app.core.pdf_uploader.embedder import AsyncEmbedder
 
-# Busca híbrida semelhante ao seu rag.controllers.hybrid_search
-async def kb_retrieve(ctx: RunContextWrapper[Any], args_json: str) -> str:
-    """
-    Realiza busca híbrida (BM25 + vetor) no Milvus e retorna top_k chunks.
-    args: {"query": str, "top_k": int, "sparse_weight": float, "dense_weight": float}
-    """
-    try:
-        args = json.loads(args_json or "{}")
-        query = str(args.get("query", "")).strip()
-        top_k = int(args.get("top_k", 5))
-        sw = float(args.get("sparse_weight", 0.5))
-        dw = float(args.get("dense_weight", 0.5))
-        if not query:
-            return "[]"
 
-        [qvec] = await AsyncEmbedder().encode([query])
-        raw = MilvusSearch().search(
-            query=query,
-            dense_embedding=qvec,
-            expr="",
-            dense_weight=dw,
-            sparse_weight=sw,
-            limit=top_k,
-        )
-        hits = raw.get("data") if isinstance(raw, dict) else raw
-        out = []
-        if isinstance(hits, list):
-            for h in hits[:top_k]:
-                if not isinstance(h, dict):
-                    continue
-                out.append({
-                    "text": str(h.get("text") or ""),
-                    "source": h.get("source"),
-                    "file_id": h.get("file_id"),
-                    "page": h.get("page"),
-                    "chunk_index": h.get("chunk_index"),
-                    "filename": h.get("filename"),
-                    "score": h.get("distance"),
-                })
-        return json.dumps(out, ensure_ascii=False)
-    except Exception:
-        logger.exception("kb_retrieve failed")
-        return "[]"
+class Arguments(BaseModel):
+	query: str = Field(..., description="The search query")
+	top_k: int = Field(3, description="Number of top results to return")
+	sparse_weight: float = Field(
+		0.5, description="Weight for sparse search results (0.0 to 1.0)"
+	)
+	dense_weight: float = Field(
+		0.5, description="Weight for dense search results (0.0 to 1.0)"
+	)
+
+
+async def kb_retrieve(ctx: RunContextWrapper[Any], args: str) -> str:
+	try:
+		parsed = Arguments.model_validate_json(args)
+		embedder = AsyncEmbedder()
+		milvus = MilvusSearch()
+
+		logger.debug(
+			f"Query: {parsed.query}, top_k: {parsed.top_k},"
+			f" sparse_weight: {parsed.sparse_weight}, "
+			f"dense_weight: {parsed.dense_weight}"
+		)
+
+		# Embed the query
+		vectors = await embedder.encode([parsed.query])
+
+		if not vectors:
+			return "[]"
+		query_vec = vectors[0]
+
+		raw = milvus.search(
+			query=parsed.query,
+			dense_embedding=query_vec,
+			expr="",
+			dense_weight=parsed.dense_weight,
+			sparse_weight=parsed.sparse_weight,
+			limit=parsed.top_k,
+		)
+
+		# Normalize Milvus response into a list of hit dicts
+		hits = []
+		if isinstance(raw, dict):
+			maybe_hits = raw.get("data")
+			if isinstance(maybe_hits, list):
+				hits = [h for h in maybe_hits if isinstance(h, dict)]
+		elif isinstance(raw, list):
+			hits = [h for h in raw if isinstance(h, dict)]  # type: ignore
+
+		# Build items to return as JSON
+		items = []
+		for h in hits[: parsed.top_k]:
+			text_val = h.get("text")
+			if text_val is None:
+				text_val = ""
+			items.append(
+				{
+					"text": str(text_val),
+					"source": h.get("source", ""),
+					"file_id": h.get("file_id", ""),
+					"page": h.get("page", None),
+					"chunk_index": h.get("chunk_index", None),
+					"filename": h.get("filename", ""),
+					"score": h.get("distance", None),
+				}
+			)
+
+		logger.debug(f"kb_retrieve returning {len(items)} items")
+
+		return json.dumps(items, ensure_ascii=False)
+
+	except Exception as e:
+		logger.error(f"kb_retrieve failed: {e}")
+		return "[]"

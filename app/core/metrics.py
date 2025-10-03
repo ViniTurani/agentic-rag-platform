@@ -3,7 +3,6 @@ from contextlib import contextmanager
 
 from prometheus_client import Counter, Histogram
 
-# Contagens
 INGEST_FILES = Counter(
 	"ingest_files_total",
 	"Arquivos enviados para ingestao",
@@ -58,7 +57,7 @@ SEARCH_ERRORS = Counter(
 	"Erros em consultas de busca",
 )
 
-# latências por estágio (segundos)
+# latencias por estágio (segundos)
 STAGE_LATENCY = Histogram(
 	"rag_stage_latency_seconds",
 	"Latencia por estagio do pipeline",

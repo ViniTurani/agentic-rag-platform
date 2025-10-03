@@ -1,14 +1,10 @@
-import asyncio
-
 import uvicorn
 
-from .dependencies import init_milvus
-from .settings import Settings
+from app.settings import Settings
 
 
 def main() -> None:
 	settings = Settings.get()
-	asyncio.run(init_milvus())
 	uvicorn.run(
 		app="app:create_app",
 		factory=True,

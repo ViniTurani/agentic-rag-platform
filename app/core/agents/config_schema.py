@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
@@ -20,8 +18,6 @@ class ToolDefSchema(BaseModel):
 	type: Optional[str] = None
 	config: Dict[str, Any] = Field(default_factory=dict)
 	dotted_path: Optional[str] = None
-	implementation: Optional[str] = None
-	schema: Optional[Dict[str, Any]] = None
 
 
 class AgentDefSchema(BaseModel):

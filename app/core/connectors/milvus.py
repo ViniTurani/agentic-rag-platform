@@ -88,7 +88,11 @@ class MilvusInsert:
 		except Exception as e:
 			msg = _short_err("embed", e)
 			return [
-				FailedChunk(chunk_id=c.chunk_id, error=msg, filename=c.filename)
+				FailedChunk(
+					chunk=c,
+					error=msg,
+					filename=c.filename,
+				)
 				for c in batch
 			]
 
@@ -98,7 +102,11 @@ class MilvusInsert:
 			msg = f"embed: length mismatch (got {len(vectors)}, expected {len(batch)})"
 			# mark all as failed, safest fallback
 			return [
-				FailedChunk(chunk_id=c.chunk_id, error=msg, filename=c.filename)
+				FailedChunk(
+					chunk=c,
+					error=msg,
+					filename=c.filename,
+				)
 				for c in batch
 			]
 
@@ -120,7 +128,7 @@ class MilvusInsert:
 			except Exception as e:
 				errors.append(
 					FailedChunk(
-						chunk_id=c.chunk_id,
+						chunk=c,
 						error=_short_err("prepare", e),
 						filename=c.filename,
 					)
@@ -147,7 +155,11 @@ class MilvusInsert:
 			msg = f"insert HTTP {status}: {body}"
 			# mark entire batch as failed (only those we attempted to insert)
 			errors.extend(
-				FailedChunk(chunk_id=ent.chunk_id, error=msg, filename=ent.filename)
+				FailedChunk(
+					chunk=ent,
+					error=msg,
+					filename=ent.filename,
+				)
 				for ent in entities
 			)
 			logger.error(f"Milvus insert error: {msg}")
@@ -155,7 +167,11 @@ class MilvusInsert:
 			MILVUS_INSERT_ERRORS.inc()
 			msg = _short_err("insert", e)
 			errors.extend(
-				FailedChunk(chunk_id=ent.chunk_id, error=msg, filename=ent.filename)
+				FailedChunk(
+					chunk=ent,
+					error=msg,
+					filename=ent.filename,
+				)
 				for ent in entities
 			)
 			logger.error(f"Milvus insert error: {msg}")

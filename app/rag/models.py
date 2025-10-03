@@ -1,33 +1,26 @@
-from datetime import datetime
+import pymongo
+from beanie import Document, PydanticObjectId
 
-from pydantic import BaseModel
+from app.core.db.timestamps import TimestampingMixin
 
-from app.rag.schemas import Chunk
-
-
-class Document(BaseModel):
-	@classmethod
-	def get_collection_name(cls) -> str:
-		raise NotImplementedError()
+from .schemas import Chunk, File
 
 
-class ChunkDAO(Chunk, Document):
-	@classmethod
-	def get_collection_name(cls) -> str:
-		return "chunks"
+class FileDAO(File, TimestampingMixin, Document):
+	class Settings:
+		name = "files"
+		indexes = [
+			pymongo.IndexModel([("file_hash", pymongo.ASCENDING)]),
+			pymongo.IndexModel([("created_at", pymongo.DESCENDING)]),
+		]
 
 
-class FileDAO(Document):
-	file_id: str
-	file_hash: str
-	filename: str | None
-	title: str | None
-	content: str
-	total_pages: int
-	size_bytes: int
-	mime: str
-	created_at: datetime
+class ChunkDAO(Chunk, TimestampingMixin, Document):
+	file_id: PydanticObjectId
 
-	@classmethod
-	def get_collection_name(cls) -> str:
-		return "files"
+	class Settings:
+		name = "chunks"
+		indexes = [
+			pymongo.IndexModel([("file_id", pymongo.ASCENDING)]),
+			pymongo.IndexModel([("created_at", pymongo.DESCENDING)]),
+		]

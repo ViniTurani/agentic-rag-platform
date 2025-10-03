@@ -21,7 +21,14 @@
     "editor.unicodeHighlight.nonBasicASCII": true,
     "editor.renderControlCharacters": true,
     "editor.rulers": [88],
-    "cSpell.words": ["Embedder", "MILVUS", "vectordb"],
+    "cSpell.words": [
+      "agentic",
+      "embedder",
+      "Embedder",
+      "frombytes",
+      "MILVUS",
+      "vectordb"
+    ],
 
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.autoSearchPaths": true,
