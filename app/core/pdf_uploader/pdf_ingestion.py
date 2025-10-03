@@ -140,7 +140,7 @@ async def ingest(full_pdf: UploadFile) -> IndexingResult:
 	with observe("chunkfy"):
 		chunks: list[Chunk] = chunkfy_pages(
 			pages,
-			file_id=file_id,
+			file_id=str(file_id),
 			filename=full_pdf.filename,
 			title=(doc.metadata or {}).get("title")
 			if hasattr(doc, "metadata")

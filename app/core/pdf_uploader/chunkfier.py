@@ -1,8 +1,6 @@
 import re
 from typing import Any, Dict, List
 
-from beanie import PydanticObjectId
-
 from app.rag.schemas import Chunk
 
 _MD_IMG_RE = re.compile(r"!\[[^\]]*\]\([^)]+\)")
@@ -69,7 +67,7 @@ def add_extra_info(text: str, **info: Any) -> str:
 
 def chunkfy_pages(
 	pages: List[Dict[str, Any]],
-	file_id: PydanticObjectId,
+	file_id: str,
 	filename: str | None,
 	title: str | None = None,
 	max_chars: int = 1200,

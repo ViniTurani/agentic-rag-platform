@@ -97,7 +97,6 @@ class MilvusInsert:
 				FailedChunk(
 					chunk=c,
 					error=msg,
-					filename=c.filename,
 				)
 				for c in batch
 			]
@@ -111,7 +110,6 @@ class MilvusInsert:
 				FailedChunk(
 					chunk=c,
 					error=msg,
-					filename=c.filename,
 				)
 				for c in batch
 			]
@@ -136,7 +134,6 @@ class MilvusInsert:
 					FailedChunk(
 						chunk=c,
 						error=_short_err("prepare", e),
-						filename=c.filename,
 					)
 				)
 
@@ -164,7 +161,6 @@ class MilvusInsert:
 				FailedChunk(
 					chunk=ent,
 					error=msg,
-					filename=ent.filename,
 				)
 				for ent in entities
 			)
@@ -176,7 +172,6 @@ class MilvusInsert:
 				FailedChunk(
 					chunk=ent,
 					error=msg,
-					filename=ent.filename,
 				)
 				for ent in entities
 			)
