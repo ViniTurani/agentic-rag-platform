@@ -50,10 +50,10 @@ services:
       MINIO_ADDRESS: minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
-      ulimits:
+    ulimits:
       nofile:
-      soft: 65535
-      hard: 65535
+        soft: 65535
+        hard: 65535
     shm_size: "1g"
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/milvus:/var/lib/milvus
