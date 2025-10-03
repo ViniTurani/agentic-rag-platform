@@ -7,7 +7,7 @@ import yaml
 from loguru import logger
 from pydantic import BaseModel
 
-from agents import Agent, FileSearchTool, FunctionTool, WebSearchTool, handoff
+from agents import Agent, FileSearchTool, FunctionTool, WebSearchTool
 from app.core.utils import get_json_schema
 
 from .config_schema import AgentsConfigSchema
@@ -16,7 +16,6 @@ HOSTED_TOOL_MAP = {
 	"WebSearchTool": WebSearchTool,
 	"FileSearchTool": FileSearchTool,
 }
-# lets add loguru logs to debug this file
 
 
 def _expand_env(obj: Any) -> Any:
@@ -98,21 +97,35 @@ def build_agents(
 	tools_by_name: Dict[str, Any],
 ) -> Dict[str, Agent]:
 	agents: Dict[str, Agent] = {}
+
+	# First pass: create Agent objects without resolving handoffs (use empty list)
 	for a in cfg.agents:
 		logger.debug(f"Building agent: {a.name}")
 		prompt = Path(a.prompt_file).read_text(encoding="utf-8")
 		tool_objs = [tools_by_name[n] for n in a.tool_refs]
-		agents[a.name] = Agent(name=a.name, instructions=prompt, tools=tool_objs)
-
-	for a in cfg.agents:
-		if not a.handoffs:
-			continue
-		current = agents[a.name]
-		handoff_tools = [handoff(agent=agents[dest]) for dest in a.handoffs]
 		agents[a.name] = Agent(
-			name=current.name,
-			instructions=current.instructions,
-			tools=current.tools,
-			handoffs=handoff_tools,  # type: ignore
+			name=a.name,
+			instructions=prompt,
+			tools=tool_objs,
+			handoffs=[],
+			handoff_description=a.handoff_description,
 		)
+
+	# Second pass: resolve handoffs (strings -> Agent objects or keep Handoff objects)
+	for a in cfg.agents:
+		raw_handoffs = a.handoffs or []
+		resolved: list[Any] = []
+		for ref in raw_handoffs:
+			if isinstance(ref, str):
+				target = agents.get(ref)
+				if target is None:
+					raise ValueError(
+						f"Handoff target '{ref}' for agent '{a.name}' not found"
+					)
+				resolved.append(target)
+			else:
+				# Already an Agent or a Handoff object; append as-is
+				resolved.append(ref)
+		agents[a.name].handoffs = resolved
+
 	return agents

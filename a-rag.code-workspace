@@ -1,19 +1,21 @@
 {
-  "folders": [
-    {
-      "name": "agentic-rag-workspace",
-      "path": "."
-    }
-  ],
+  "folders": [{ "name": "agentic-rag-workspace", "path": "." }],
   "settings": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+
     "[python]": {
       "editor.formatOnSave": true,
       "editor.codeActionsOnSave": {
         "source.fixAll": "explicit",
         "source.organizeImports": "explicit"
       },
-      "editor.defaultFormatter": "charliermarsh.ruff"
+      "editor.defaultFormatter": "charliermarsh.ruff",
+      "editor.tabSize": 4,
+      "editor.insertSpaces": false
     },
+
     "files.associations": {
       "*.env": "properties"
     },

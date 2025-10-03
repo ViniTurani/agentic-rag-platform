@@ -12,7 +12,6 @@ class File(BaseModel):
 
 
 class Chunk(BaseModel):
-	file: File
 	filename: str
 	title: str | None
 	page_idx: int
@@ -44,6 +43,7 @@ class IndexingResult(BaseModel):
 	total_chunks: int
 	errors: list[FailedChunk]
 	inserted_file_id: str | None = None
+	inserted_chunk_ids: list[str] | None = None
 
 
 class SearchResult(BaseModel):

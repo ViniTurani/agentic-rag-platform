@@ -25,6 +25,7 @@ class AgentDefSchema(BaseModel):
 	prompt_file: str
 	tool_refs: List[str] = Field(default_factory=list)
 	handoffs: List[str] = Field(default_factory=list)
+	handoff_description: str
 
 
 class AgentsConfigSchema(BaseModel):

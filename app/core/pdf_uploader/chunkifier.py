@@ -1,6 +1,7 @@
 import re
 from typing import Any, Dict, List
-from uuid import uuid4
+
+from beanie import PydanticObjectId
 
 from app.rag.schemas import Chunk
 
@@ -68,7 +69,7 @@ def add_extra_info(text: str, **info: Any) -> str:
 
 def chunkfy_pages(
 	pages: List[Dict[str, Any]],
-	file_id: str,
+	file_id: PydanticObjectId,
 	filename: str | None,
 	title: str | None = None,
 	max_chars: int = 1200,
@@ -91,9 +92,7 @@ def chunkfy_pages(
 			)
 			chunks.append(
 				Chunk(
-					chunk_id=uuid4().hex,
 					title=title,
-					file_id=file_id,
 					filename=filename if filename else "N/A",
 					page_idx=page_no,
 					chunk_idx=idx,

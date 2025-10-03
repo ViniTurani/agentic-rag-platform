@@ -51,7 +51,11 @@ class MilvusInsert:
 		return {}
 
 	async def upload_chunks(
-		self, chunks: List[Chunk], embedder: "AsyncEmbedder"
+		self,
+		chunks: List[Chunk],
+		embedder: "AsyncEmbedder",
+		file_id: str,
+		chunk_ids: List[str],
 	) -> IndexingResult:
 		"""
 		Insert chunk embeddings into Milvus and return an IndexingResult.
@@ -75,6 +79,8 @@ class MilvusInsert:
 			total_chunks=n,
 			errors=errors,
 			message="Documents uploaded successfully",
+			inserted_file_id=str(file_id),
+			inserted_chunk_ids=[str(cid) for cid in chunk_ids],
 		)
 
 	async def _process_batch(

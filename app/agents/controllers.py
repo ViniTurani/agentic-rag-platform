@@ -1,8 +1,11 @@
-from typing import Optional
+from __future__ import annotations
+
+from typing import List, Optional
 
 from beanie import PydanticObjectId
 from fastapi import HTTPException
 from loguru import logger
+from openai.types.responses import EasyInputMessageParam
 
 from app.core.agents.engine import get_engine
 
@@ -48,6 +51,7 @@ async def run_agents(
 		raise ValueError("Failed to store or retrieve thread ID.")
 
 	user_msg = MessageDAO(
+		id=PydanticObjectId(),
 		thread_id=thread.id,
 		role="user",
 		content=message,
@@ -62,43 +66,59 @@ async def run_agents(
 	await thread.save()
 
 	# 3) Execute the engine
+	msgs = (
+		await MessageDAO.find(MessageDAO.thread_id == thread.id)
+		.sort("+created_at")
+		.to_list()
+	)
+
+	# 4) Payload for agents sdk
+	messages_payload: List[EasyInputMessageParam] = [
+		EasyInputMessageParam(
+			role=m.role,  # type: ignore[arg-type]
+			content=m.content + f"\n user_id: {user_id} ",
+			type="message",
+		)
+		for m in msgs
+	]
+
+	# 5) Execute the engine with the full history
 	engine = get_engine()
 	logger.info(f"Running agent for thread={thread_id} user={user_id}")
+	result = await engine.run(
+		messages=messages_payload,
+		user_id=user_id,
+		thread_id=thread_id,
+	)
+
+	# 6) Store the assistant response(s)
+	assistant_messages: list[MessageDAO] = []
 	try:
-		result = await engine.run(
-			message=message,
-			user_id=user_id,
-			thread_id=thread_id,
-		)
-	except Exception as e:
-		logger.exception("Error running agents engine")
-		raise HTTPException(status_code=500, detail=str(e))
+		for x in result.new_items:
+			try:
+				content = x.raw_item.content  # type: ignore
+			except Exception:
+				content = (
+					getattr(x, "output_text", None)
+					or getattr(x, "message", None)
+					or str(x)
+				)
 
-	messages = []
-	for x in result.raw_responses:
-		logger.debug(f"Agent response: {x}")
-
-		try:
-			content = x.output[-1].content[-1].text  # type: ignore
-		except Exception:
-			content = str(x.output)
-
-		assistant_msg = MessageDAO(
-			thread_id=thread.id,
-			role="assistant",
-			content=content,
-			name=result.last_agent.name,
-		)
-		await assistant_msg.insert()
-
-		if not assistant_msg.id:
-			raise HTTPException(
-				status_code=404, detail="Failed to store assistant message."
+			assistant_msg = MessageDAO(
+				thread_id=thread.id,
+				role="assistant",
+				content=str(content),
+				name=x.agent.name,
 			)
 
-		messages.append(assistant_msg)
+			await assistant_msg.insert()
+			assistant_messages.append(assistant_msg)
 
-	thread.messages.extend([msg.id for msg in messages])
+	except Exception:
+		logger.exception("Failed to persist assistant responses")
+
+	# 7) Update the thread with the new assistant messages
+	thread.messages.extend([msg.id for msg in assistant_messages if msg.id])
 	await thread.save()
 
 	logger.info(f"Run complete: thread={thread_id}")
@@ -113,32 +133,28 @@ async def read_thread_by_id(thread_id: str) -> ThreadOut:
 		oid = PydanticObjectId(thread_id)
 	except Exception:
 		logger.error(f"Invalid thread_id: {thread_id}")
-		raise
+		raise HTTPException(status_code=400, detail="Invalid thread_id")
 
 	thread = await ThreadDAO.get(oid)
 	if not thread:
 		logger.warning(f"Thread not found: {thread_id}")
-		raise ValueError("Thread not found")
+		raise HTTPException(status_code=404, detail="Thread not found")
 
 	msgs = (
 		await MessageDAO.find(MessageDAO.thread_id == oid).sort("+created_at").to_list()
 	)
 
-	messages = [
-		Message(
-			thread_id=str(m.id),
-			role=m.role,
-			content=m.content,
-			name=m.name,
-		)
-		for m in msgs
-	]
-
 	return ThreadOut(
 		thread_id=str(thread.id),
-		metadata={"thread.status": thread.status},
 		created_by=thread.created_by,
 		created_at=thread.created_at.isoformat(),
 		updated_at=thread.updated_at.isoformat(),
-		messages=messages,
+		messages=[
+			Message(
+				role=m.role,
+				content=m.content,
+				name=m.name,
+			)
+			for m in msgs
+		],
 	)
