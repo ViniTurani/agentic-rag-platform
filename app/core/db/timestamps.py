@@ -11,15 +11,15 @@ def now_utc() -> datetime:
 
 class TimestampingMixin(BaseModel):
 	"""
-	Mixin que adiciona `created_at` e `updated_at` (timezone-aware, UTC) e mantem
-	updated_at coerente.
+	Mixin that adds `created_at` and `updated_at` (timezone-aware, UTC) and keeps
+		`updated_at` consistent.
 
-	- Ao inicializar, se nao houver created_at, usa now_utc(); se nao houver updated_at,
-	usa o mesmo valor.
-	- Ao setar qualquer atributo, se mudar algo que nao seja updated_at, atualiza
-	updated_at automaticamente.
-	- Garante created_at <= updated_at.
-	- Exige que os datetimes sejam timezone-aware em UTC.
+	- On initialization, if there is no `created_at`, uses now_utc(); if there is no
+	`updated_at`, uses the same value.
+	- When setting any attribute, if something changes other than `updated_at`,
+		`updated_at` is updated automatically.
+	- Ensures `created_at` <= `updated_at`.
+	- Requires datetimes to be timezone-aware in UTC.
 	"""
 
 	created_at: datetime = Field(default_factory=now_utc)
@@ -49,15 +49,15 @@ class TimestampingMixin(BaseModel):
 	def _ensure_aware_utc(cls, dt: datetime) -> datetime:
 		"""Ensures that the datetime is timezone-aware and in UTC."""
 		if dt.tzinfo is None:
-			# fallback para legados
+			# fallback for legacy values
 			return dt.replace(tzinfo=timezone.utc)
 		if dt.utcoffset() != timedelta(0):
-			# normaliza para UTC mantendo o instante
+			# normalize to UTC preserving the instant
 			return dt.astimezone(timezone.utc)
 		return dt
 
 	def __setattr__(self, name: str, value: Any) -> None:
-		# atualiza updated_at automaticamente em mudanças
+		# automatically update updated_at on changes
 		if name == "created_at":
 			current_updated_at = getattr(self, "updated_at", None)
 			if value and current_updated_at and current_updated_at > value:

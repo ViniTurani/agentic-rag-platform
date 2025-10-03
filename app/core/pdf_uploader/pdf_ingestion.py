@@ -10,7 +10,7 @@ from app.core.metrics import INGEST_CHUNKS, INGEST_DUPLICATES, INGEST_FILES, obs
 from app.rag.models import ChunkDAO, FileDAO
 from app.rag.schemas import Chunk, IndexingResult
 
-from .chunkifier import chunkfy_pages
+from .chunkfier import chunkfy_pages
 from .embedder import AsyncEmbedder
 from .parser import markdown_parse
 
@@ -23,8 +23,8 @@ async def create_and_insert_chunks(
 	chunks: list[Chunk], file_id: PydanticObjectId
 ) -> list[str]:
 	"""
-	Converte os schemas Chunk em documentos Beanie (ChunkDAO) e insere em lote.
-	Retorna a lista de IDs inseridos (string).
+	Converts Chunk schemas to Beanie documents (ChunkDAO) and inserts them in bulk.
+	Returns the list of inserted IDs (as strings).
 	"""
 	if not chunks:
 		return []
@@ -57,8 +57,8 @@ async def create_and_save_file_record(
 	mime: str,
 ) -> PydanticObjectId:
 	"""
-	Cria e insere o registro do arquivo (FileDAO) com timestamps automaticos.
-	Retorna o id do documento inserido (string).
+	Creates and inserts the file record (FileDAO) with automatic timestamps.
+	Returns the id of the inserted document (PydanticObjectId).
 	"""
 
 	file_id = PydanticObjectId()
@@ -79,13 +79,13 @@ async def create_and_save_file_record(
 
 async def ingest(full_pdf: UploadFile) -> IndexingResult:
 	"""
-	Ingestao completa de um PDF:
-	- Dedup por hash.
-	- Parse para paginas markdown.
-	- Salva registro do arquivo no MongoDB (Beanie).
-	- Chunkify e salva chunks no MongoDB (Beanie).
-	- Embedding + insert no Milvus.
-	Retorna IndexingResult com detalhes da operacao.
+	Complete ingestion of a PDF:
+	- Deduplicate by hash.
+	- Parse into markdown pages.
+	- Save the file record in MongoDB (Beanie).
+	- Chunkfy and save chunks in MongoDB (Beanie).
+	- Embed and insert into Milvus.
+	Returns an IndexingResult with details of the operation.
 	"""
 	INGEST_FILES.inc()
 

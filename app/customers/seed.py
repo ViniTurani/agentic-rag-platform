@@ -11,7 +11,7 @@ def _utc_now() -> datetime:
 
 async def seed_customers() -> None:
 	"""
-	Cria/atualiza alguns clientes (idempotente) para testes do agente de suporte.
+	Create/update some customers (idempotent) for support agent testing.
 	"""
 	samples = [
 		{
