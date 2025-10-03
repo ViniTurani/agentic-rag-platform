@@ -12,23 +12,21 @@ from app.rag.schemas import IndexingResult, SearchResult, UploadResponse
 
 async def delete_file_and_chunks(file_id: str) -> dict[str, int]:
 	"""
-	Remove do Mongo (Beanie) o File e todos os seus Chunks.
-	Retorna o total deletado: {"file_deleted": 0|1, "chunks_deleted": N}.
+	Removes the File and all its Chunks from MongoDB.
+	Returns the total deleted: {"file_deleted": 0|1, "chunks_deleted": N}.
 	"""
 	try:
-		# apaga chunks
-		chunk_query = ChunkDAO.find(ChunkDAO.file_id == file_id)
+		# delete chunks
+		chunk_query = ChunkDAO.find(
+			ChunkDAO.file_id == file_id,
+		)
+
 		del_chunks_res = await chunk_query.delete()
-		chunks_deleted = getattr(del_chunks_res, "deleted_count", None)
-		if chunks_deleted is None:
-			# fallback caso o driver/versão não retorne contagem
-			try:
-				chunks_deleted = 0
-			except Exception:
-				chunks_deleted = 0
+		chunks_deleted = getattr(del_chunks_res, "deleted_count", 0)
 
 		file_deleted = 0
 		file_doc = await FileDAO.find_one(FileDAO.id == file_id)
+
 		if file_doc:
 			del_file_res = await file_doc.delete()
 
@@ -40,6 +38,7 @@ async def delete_file_and_chunks(file_id: str) -> dict[str, int]:
 			f"Cleanup done for file_id={file_id} | "
 			f"chunks_deleted={chunks_deleted} file_deleted={file_deleted}"
 		)
+
 		return {
 			"chunks_deleted": int(chunks_deleted or 0),
 			"file_deleted": int(file_deleted or 0),
@@ -83,11 +82,11 @@ async def upload_pdf_documents(files: list[UploadFile]):
 			total_chunks += res.total_chunks
 			failed_chunks.extend(res.errors)
 
-			# se todos chunks falharam no Milvus, limpamos Mongo para este arquivo
+			# if all chunks failed to index in Milvus, clean up MongoDB for this file
 			if res.total_chunks == len(res.errors):
 				logger.warning(
 					"All chunks failed to be indexed for this file; "
-					"removing file and chunks from Mongo."
+					"removing file and chunks from MongoDB."
 				)
 				file_id = res.inserted_file_id
 				if not file_id:
@@ -109,6 +108,11 @@ async def upload_pdf_documents(files: list[UploadFile]):
 		)
 
 	docs_indexed = len(files) - duplicate_files - len(failed_files)
+	logger.info(
+		f"Indexing complete. {docs_indexed} documents indexed, "
+		f"{duplicate_files} duplicates, {len(failed_files)} failed."
+	)
+
 	if docs_indexed < 0:
 		docs_indexed = 0
 
@@ -117,6 +121,8 @@ async def upload_pdf_documents(files: list[UploadFile]):
 			msg = "No documents indexed. All files were duplicates."
 		else:
 			msg = "No documents indexed. All files failed to process."
+
+		logger.error(msg)
 
 	return UploadResponse(
 		message=msg,

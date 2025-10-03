@@ -100,6 +100,8 @@ services:
         - path: ./app
           action: sync
           target: /project/app
+    environment:
+      LOGURU_COLORIZE: YES
 
   api-debug:
     extends:
@@ -110,6 +112,8 @@ services:
       - "5678:5678"
       - "8000:8000"
     restart: unless-stopped
+    environment:
+      LOGURU_COLORIZE: YES
 
 volumes:
   etcd-data:

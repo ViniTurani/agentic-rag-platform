@@ -36,6 +36,9 @@ class SwarmEngine:
 			)
 
 		with trace(workflow_name=self.workflow_name, group_id=session.session_id):
+			logger.debug(
+				f"Starting run for user {user_id}, session {session.session_id}, "
+			)
 			result = await Runner.run(
 				self.entry,
 				message,
@@ -52,6 +55,7 @@ _engine_singleton: Optional[SwarmEngine] = None
 def get_engine() -> SwarmEngine:
 	global _engine_singleton
 	if _engine_singleton is None:
+		logger.info("Initializing new SwarmEngine")
 		s = Settings.get()
 		_engine_singleton = SwarmEngine(
 			cfg_path=getattr(s, "AGENTS_CONFIG_PATH", "resources/agents.yaml")

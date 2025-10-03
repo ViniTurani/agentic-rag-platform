@@ -39,6 +39,9 @@ async def kb_retrieve(ctx: RunContextWrapper[Any], args: str) -> str:
 			return "[]"
 		query_vec = vectors[0]
 
+		logger.debug(f"Query vector length: {len(query_vec)}")
+		logger.info("Performing hybrid search in Milvus")
+
 		raw = milvus.search(
 			query=parsed.query,
 			dense_embedding=query_vec,
@@ -66,11 +69,11 @@ async def kb_retrieve(ctx: RunContextWrapper[Any], args: str) -> str:
 			items.append(
 				{
 					"text": str(text_val),
-					"source": h.get("source", ""),
+					"source": h.get("source", "not provided"),
 					"file_id": h.get("file_id", ""),
 					"page": h.get("page", None),
 					"chunk_index": h.get("chunk_index", None),
-					"filename": h.get("filename", ""),
+					"filename": h.get("filename", "not provided"),
 					"score": h.get("distance", None),
 				}
 			)

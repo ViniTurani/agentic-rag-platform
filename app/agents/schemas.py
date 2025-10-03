@@ -25,6 +25,6 @@ class ThreadOut(BaseModel):
 
 
 class RunRequest(BaseModel):
-	thread_id: Optional[str] = Field(None, description="Sessao/Thread opcional")
-	message: str = Field(..., description="Mensagem do usuario")
-	user_id: str = Field(..., description="Identificador do usuario")
+	thread_id: Optional[str] = Field(None, description="Optional Session/Thread")
+	message: str = Field(..., description="User message")
+	user_id: str = Field(..., description="User identifier")

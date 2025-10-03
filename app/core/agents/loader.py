@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, Tuple
 
 import yaml
+from loguru import logger
 from pydantic import BaseModel
 
 from agents import Agent, FileSearchTool, FunctionTool, WebSearchTool, handoff
@@ -15,6 +16,7 @@ HOSTED_TOOL_MAP = {
 	"WebSearchTool": WebSearchTool,
 	"FileSearchTool": FileSearchTool,
 }
+# lets add loguru logs to debug this file
 
 
 def _expand_env(obj: Any) -> Any:
@@ -57,6 +59,7 @@ def build_tools(cfg: AgentsConfigSchema) -> Dict[str, Any]:
 	tools: Dict[str, Any] = {}
 	for t in cfg.tools:
 		if t.kind == "hosted":
+			logger.debug(f"Building hosted tool: {t.name}")
 			if not t.type:
 				raise ValueError(f"hosted tool '{t.name}' is missing a type")
 
@@ -67,6 +70,7 @@ def build_tools(cfg: AgentsConfigSchema) -> Dict[str, Any]:
 			tools[t.name] = cls(**(t.config or {}))
 
 		elif t.kind == "python_function":
+			logger.debug(f"Building python_function tool: {t.name}")
 			if not t.dotted_path:
 				raise ValueError(
 					f"python_function tool '{t.name}' is missing a dotted_path"
@@ -84,6 +88,7 @@ def build_tools(cfg: AgentsConfigSchema) -> Dict[str, Any]:
 			)
 
 		else:
+			logger.error(f"Invalid tool kind: {t.kind}")
 			raise ValueError(f"Invalid tool kind: {t.kind}")
 	return tools
 
@@ -94,6 +99,7 @@ def build_agents(
 ) -> Dict[str, Agent]:
 	agents: Dict[str, Agent] = {}
 	for a in cfg.agents:
+		logger.debug(f"Building agent: {a.name}")
 		prompt = Path(a.prompt_file).read_text(encoding="utf-8")
 		tool_objs = [tools_by_name[n] for n in a.tool_refs]
 		agents[a.name] = Agent(name=a.name, instructions=prompt, tools=tool_objs)

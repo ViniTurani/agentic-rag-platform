@@ -65,5 +65,7 @@ ENV PATH="/project/.venv/bin:${PATH}"
 # ---------- Debug ----------
 FROM local AS debug
 WORKDIR /project
+ENV TERM=xterm-256color
 EXPOSE 5678
-CMD ["python", "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", "-m", "app"]
+CMD ["python", "-X", "frozen_modules=off", "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", "-m", "app"]
+

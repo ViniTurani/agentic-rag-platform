@@ -16,11 +16,11 @@ async def run_agents(
 	thread_id: Optional[str] = None,
 ) -> ThreadOut:
 	"""
-	Executa o agente e persiste as mensagens/threads.
-	- Se thread_id nao for informado, cria uma nova thread.
-	- Se informado e nao existir, cria uma nova (logando um warning).
-	- Salva a msg do usuario e a msg do assistente como registros MessageDAO.
-	- Retorna: (output_text, thread_id)
+	Execute the agent and persist the messages/threads.
+	- If thread_id is not provided, create a new thread.
+	- If provided and doesn't exist, create a new one (logging a warning).
+	- Save the user message and assistant message as MessageDAO records.
+	- Returns: ThreadOut object with complete thread information.
 	"""
 
 	thread: ThreadDAO | None = None
@@ -61,7 +61,7 @@ async def run_agents(
 	thread.messages.append(user_msg.id)
 	await thread.save()
 
-	# 3) Executa o engine
+	# 3) Execute the engine
 	engine = get_engine()
 	logger.info(f"Running agent for thread={thread_id} user={user_id}")
 	try:
@@ -74,20 +74,31 @@ async def run_agents(
 		logger.exception("Error running agents engine")
 		raise HTTPException(status_code=500, detail=str(e))
 
-	assistant_msg = MessageDAO(
-		thread_id=thread.id,
-		role="assistant",
-		content=result.final_output,
-		name=result.last_agent.name,
-	)
-	await assistant_msg.insert()
+	messages = []
+	for x in result.raw_responses:
+		logger.debug(f"Agent response: {x}")
 
-	if not assistant_msg.id:
-		raise HTTPException(
-			status_code=404, detail="Failed to store assistant message."
+		try:
+			content = x.output[-1].content[-1].text  # type: ignore
+		except Exception:
+			content = str(x.output)
+
+		assistant_msg = MessageDAO(
+			thread_id=thread.id,
+			role="assistant",
+			content=content,
+			name=result.last_agent.name,
 		)
+		await assistant_msg.insert()
 
-	thread.messages.append(assistant_msg.id)
+		if not assistant_msg.id:
+			raise HTTPException(
+				status_code=404, detail="Failed to store assistant message."
+			)
+
+		messages.append(assistant_msg)
+
+	thread.messages.extend([msg.id for msg in messages])
 	await thread.save()
 
 	logger.info(f"Run complete: thread={thread_id}")
@@ -96,7 +107,7 @@ async def run_agents(
 
 async def read_thread_by_id(thread_id: str) -> ThreadOut:
 	"""
-	Le a thread + mensagens por id para retornar.
+	Read a thread + messages by id to return.
 	"""
 	try:
 		oid = PydanticObjectId(thread_id)
