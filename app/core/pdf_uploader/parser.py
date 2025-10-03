@@ -17,7 +17,8 @@ def _needs_ocr(text: str, min_replacements: int = 5, max_ratio: float = 0.01) ->
 	if not text or not text.strip():
 		return True
 	reps = text.count(REPLACEMENT_CHAR)
-	if reps > -min_replacements:
+
+	if reps > min_replacements:
 		return True
 
 	return (reps / max(len(text), 1)) > max_ratio
@@ -27,7 +28,9 @@ def _ocr_page(
 	doc: Document, page_index: int, dpi: int = 300, lang: str = "por+eng+spa"
 ) -> str:
 	page = doc[page_index]
+	# Create a pixmap (image representation) from the PDF page
 	pix = page.get_pixmap(dpi=dpi)  # type: ignore
+
 	img = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
 
 	try:
@@ -40,14 +43,11 @@ def _ocr_page(
 def markdown_parse(
 	doc: Document, ocr_lang: str = "por+eng+spa", dpi: int = 300
 ) -> list[dict]:
-	# to_markdown may return a string (single-page markdown) or a list of page dicts;
-	raw_md = to_markdown(
+	md: list[dict] = to_markdown(
 		doc,
 		page_chunks=True,
 		embed_images=False,
-	)
-
-	md: list[dict] = [{"text": raw_md}]  # TODO review this line
+	)  # type: ignore
 
 	for i, page_obj in enumerate(md):
 		txt = page_obj.get("text") or page_obj.get("content") or ""

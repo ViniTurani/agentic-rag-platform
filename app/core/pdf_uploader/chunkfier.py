@@ -1,6 +1,5 @@
 import re
 from typing import Any, Dict, List
-from uuid import uuid4
 
 from app.rag.schemas import Chunk
 
@@ -14,7 +13,7 @@ def _strip_md_images(text: str) -> str:
 
 
 def _unhyphenate(text: str) -> str:
-	# join words: "inter-\ncação"->"interação"
+	# join words: "inter-\ncaçao"->"interaçao"
 	text = re.sub(r"(\w)-\s*\n\s*(\w)", r"\1\2", text or "")
 	return text.replace("\r", "")
 
@@ -91,9 +90,7 @@ def chunkfy_pages(
 			)
 			chunks.append(
 				Chunk(
-					chunk_id=uuid4().hex,
 					title=title,
-					file_id=file_id,
 					filename=filename if filename else "N/A",
 					page_idx=page_no,
 					chunk_idx=idx,

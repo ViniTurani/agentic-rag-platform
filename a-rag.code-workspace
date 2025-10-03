@@ -1,19 +1,21 @@
 {
-  "folders": [
-    {
-      "name": "agentic-rag-workspace",
-      "path": "."
-    }
-  ],
+  "folders": [{ "name": "agentic-rag-workspace", "path": "." }],
   "settings": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+
     "[python]": {
       "editor.formatOnSave": true,
       "editor.codeActionsOnSave": {
         "source.fixAll": "explicit",
         "source.organizeImports": "explicit"
       },
-      "editor.defaultFormatter": "charliermarsh.ruff"
+      "editor.defaultFormatter": "charliermarsh.ruff",
+      "editor.tabSize": 4,
+      "editor.insertSpaces": false
     },
+
     "files.associations": {
       "*.env": "properties"
     },
@@ -21,7 +23,14 @@
     "editor.unicodeHighlight.nonBasicASCII": true,
     "editor.renderControlCharacters": true,
     "editor.rulers": [88],
-    "cSpell.words": ["Embedder", "MILVUS", "vectordb"],
+    "cSpell.words": [
+      "agentic",
+      "embedder",
+      "Embedder",
+      "frombytes",
+      "MILVUS",
+      "vectordb"
+    ],
 
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.autoSearchPaths": true,

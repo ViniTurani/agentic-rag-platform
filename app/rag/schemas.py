@@ -1,9 +1,27 @@
 from pydantic import BaseModel
 
 
-class FailedChunk(BaseModel):
-	chunk_id: str
+class File(BaseModel):
+	file_hash: str
 	filename: str | None
+	title: str | None
+	content: str
+	total_pages: int
+	size_bytes: int
+	mime: str
+
+
+class Chunk(BaseModel):
+	filename: str
+	title: str | None
+	page_idx: int
+	chunk_idx: int
+	source: str
+	text: str
+
+
+class FailedChunk(BaseModel):
+	chunk: Chunk
 	error: str
 
 
@@ -15,17 +33,6 @@ class UploadResponse(BaseModel):
 	failed_files: list[str] | None = None
 
 
-class Chunk(BaseModel):
-	chunk_id: str
-	file_id: str
-	filename: str
-	title: str | None
-	page_idx: int
-	chunk_idx: int
-	source: str
-	text: str
-
-
 class EmbeddedChunk(Chunk):
 	vector: list[float]
 
@@ -35,15 +42,7 @@ class IndexingResult(BaseModel):
 	total_chunks: int
 	errors: list[FailedChunk]
 	inserted_file_id: str | None = None
-
-
-class QuestionRequest(BaseModel):
-	question: str
-
-
-class QuestionResponse(BaseModel):
-	answer: str
-	references: list[str]
+	inserted_chunk_ids: list[str] | None = None
 
 
 class SearchResult(BaseModel):

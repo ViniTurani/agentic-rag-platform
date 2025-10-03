@@ -8,10 +8,10 @@ router = APIRouter()
 
 @router.get("/metrics")
 def metrics():
-    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+	return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 @router.get("/ui-metrics")
 def ui_metrics():
-    """Compact JSON for Streamlit: counters + per-stage latency stats."""
-    return get_ui_metrics()
+	"""Compact JSON for Streamlit: counters + per-stage latency stats."""
+	return get_ui_metrics()

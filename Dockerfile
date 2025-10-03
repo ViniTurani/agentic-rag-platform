@@ -23,9 +23,9 @@ ENV \
 RUN adduser --disabled-password --gecos '' --uid ${UID} ${USERNAME} \
   && apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-     ca-certificates curl git \
-     tesseract-ocr tesseract-ocr-eng tesseract-ocr-por tesseract-ocr-spa \
-     libglib2.0-0 libgl1 \
+  ca-certificates curl git \
+  tesseract-ocr tesseract-ocr-eng tesseract-ocr-por tesseract-ocr-spa \
+  libglib2.0-0 libgl1 \
   && rm -rf /var/lib/apt/lists/*
 
 USER ${USERNAME}
@@ -46,6 +46,8 @@ FROM base AS build-development
 COPY --chown=${USERNAME}:${USERNAME} ./pyproject.toml /project/pyproject.toml
 COPY --chown=${USERNAME}:${USERNAME} ./uv.lock        /project/uv.lock
 COPY --chown=${USERNAME}:${USERNAME} ./app            /project/app
+COPY --chown=${USERNAME}:${USERNAME} ./resources /project/resources
+
 
 # cria/atualiza a venv em /project/.venv e instala deps + o próprio projeto (editable)
 RUN uv sync --frozen --no-dev --project /project
@@ -63,5 +65,7 @@ ENV PATH="/project/.venv/bin:${PATH}"
 # ---------- Debug ----------
 FROM local AS debug
 WORKDIR /project
+ENV TERM=xterm-256color
 EXPOSE 5678
-CMD ["python", "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", "-m", "app"]
+CMD ["python", "-X", "frozen_modules=off", "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", "-m", "app"]
+

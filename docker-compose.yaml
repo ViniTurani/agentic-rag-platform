@@ -22,8 +22,8 @@ services:
     container_name: milvus-minio
     image: minio/minio:RELEASE.2024-05-10T01-41-38Z
     environment:
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
     ports:
       - "9001:9001"
       - "9000:9000"
@@ -35,6 +35,7 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+    restart: unless-stopped
     networks:
       - my-network
 
@@ -47,6 +48,13 @@ services:
     environment:
       ETCD_ENDPOINTS: etcd:2379
       MINIO_ADDRESS: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    shm_size: "1g"
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/milvus:/var/lib/milvus
     healthcheck:
@@ -61,6 +69,7 @@ services:
     depends_on:
       - "etcd"
       - "minio"
+    restart: unless-stopped
     networks:
       - my-network
 
@@ -91,7 +100,8 @@ services:
         - path: ./app
           action: sync
           target: /project/app
-
+    environment:
+      LOGURU_COLORIZE: YES
 
   api-debug:
     extends:
@@ -102,6 +112,8 @@ services:
       - "5678:5678"
       - "8000:8000"
     restart: unless-stopped
+    environment:
+      LOGURU_COLORIZE: YES
 
 volumes:
   etcd-data:

@@ -1,8 +1,14 @@
-from app.core.connectors.mongo import MongoHelper
-from app.rag.models import ChunkDAO
+from typing import Any
 
-mongo_client = MongoHelper()
+from pydantic import BaseModel
 
 
-def delete_file_and_chunks(file_id: str):
-	mongo_client.delete_many({"file_id": file_id}, model=ChunkDAO)
+def get_json_schema(base_model: type[BaseModel]) -> dict[str, Any]:
+	j_schema = base_model.model_json_schema()
+	j_schema["additionalProperties"] = False
+
+	if "$defs" in j_schema:
+		for k, v in j_schema["$defs"].items():
+			v["additionalProperties"] = False
+
+	return j_schema
