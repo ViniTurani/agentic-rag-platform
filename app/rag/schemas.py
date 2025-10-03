@@ -22,7 +22,6 @@ class Chunk(BaseModel):
 
 class FailedChunk(BaseModel):
 	chunk: Chunk
-	filename: str | None
 	error: str
 
 
