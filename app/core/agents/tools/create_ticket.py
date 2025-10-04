@@ -39,12 +39,7 @@ async def create_ticket(ctx: RunContextWrapper[Any], args: str) -> TicketOut | N
 
 		logger.debug(f"Created ticket: {tk}")
 
-		return TicketOut(
-			**tk.model_dump(),
-			id=str(tk.id),
-			created_at=tk.created_at,
-			updated_at=tk.updated_at,
-		)
+		return TicketOut(**tk.model_dump(exclude={"id"}), id=str(tk.id))
 	except Exception as e:
 		logger.error(f"Error in create_ticket: {e}")
 		return None

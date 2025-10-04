@@ -85,7 +85,11 @@ services:
     restart: unless-stopped
 
   api:
-    build: .
+    build:
+      context: .
+      target: no-debug
+    ports:
+      - "8000:8000"
     container_name: agentic-rag
     env_file: ./environments/.env
     depends_on:
@@ -104,6 +108,7 @@ services:
       LOGURU_COLORIZE: YES
 
   api-debug:
+    container_name: agentic-rag-debug
     extends:
       service: api
     build:

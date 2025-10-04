@@ -11,22 +11,22 @@ ARG VIRTUAL_ENV
 ARG UID
 
 ENV \
-  PYTHONUNBUFFERED=1 \
-  PYTHONDONTWRITEBYTECODE=1 \
-  PIP_DISABLE_PIP_VERSION_CHECK=1 \
-  PIP_NO_CACHE_DIR=1 \
-  VIRTUAL_ENV=${VIRTUAL_ENV} \
-  PATH="${VIRTUAL_ENV}/bin:${PATH}" \
-  TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1 \
+    VIRTUAL_ENV=${VIRTUAL_ENV} \
+    PATH="${VIRTUAL_ENV}/bin:${PATH}" \
+    TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata
 
 # deps de sistema (inclui curl pro instalador do uv)
 RUN adduser --disabled-password --gecos '' --uid ${UID} ${USERNAME} \
-  && apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-  ca-certificates curl git \
-  tesseract-ocr tesseract-ocr-eng tesseract-ocr-por tesseract-ocr-spa \
-  libglib2.0-0 libgl1 \
-  && rm -rf /var/lib/apt/lists/*
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    ca-certificates curl git \
+    tesseract-ocr tesseract-ocr-eng tesseract-ocr-por tesseract-ocr-spa \
+    libglib2.0-0 libgl1 \
+    && rm -rf /var/lib/apt/lists/*
 
 USER ${USERNAME}
 
@@ -61,6 +61,15 @@ COPY --from=build-development --chown=${USERNAME}:${USERNAME} /project /project
 
 # garanta que usamos a venv do projeto por padrão
 ENV PATH="/project/.venv/bin:${PATH}"
+
+
+# ---------- no debug ----------
+FROM local AS no-debug
+WORKDIR /project
+ENV TERM=xterm-256color
+EXPOSE 5678
+CMD ["python", "-X", "frozen_modules=off", "-m", "app"]
+
 
 # ---------- Debug ----------
 FROM local AS debug
