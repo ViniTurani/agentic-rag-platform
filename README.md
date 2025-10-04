@@ -1,8 +1,11 @@
 # Agentic RAG Platform
 
+<img width="720" height="458" alt="image" src="https://github.com/user-attachments/assets/d5533612-2522-4b2c-bf7a-05fc65253546" />
+
+
 End-to-end, containerized Agent Swarm + RAG platform. Upload PDFs, parse -> chunk -> embed, store in Milvus, and query via FastAPI. Conversations are threaded and persisted in MongoDB (Beanie). Includes hybrid retrieval (dense + BM25), idempotent Milvus bootstrap, seeded customer data, and a Customer Support Agent with typed tools.
 
-> Important: You must provide a valid OpenAI API key via environment variable.
+> Important: You must provide a valid OpenAI API key via an environment variable.
 
 ---
 
@@ -27,7 +30,7 @@ End-to-end, containerized Agent Swarm + RAG platform. Upload PDFs, parse -> chun
 ## 🧠 Agent Swarm Architecture
 
 - Router Agent (entry point)
-  - Classifies each user message and dispatches to specialized agents.
+  - Classifies each user message and dispatches it to specialized agents.
   - Can "handoff" between agents as needed (e.g., from router -> knowledge or customer_support).
 - Knowledge Agent
   - Answers questions about InfinitePay products/services using RAG.
@@ -211,7 +214,7 @@ curl -s http://localhost:8000/agents/threads/<thread_id> | jq
 Example messages
 
 - "What are the fees of the Maquininha Smart?"
-- "Why I am not able to make transfers?"
+- "Why am I not able to make transfers?"
 - "Quais as principais notícias de São Paulo hoje?"
 
 Outcome: routes to the appropriate agent/tool chain and returns a concise answer.
@@ -229,7 +232,7 @@ Example messages (from the challenge)
 
 Data sources
 
-- Suggested InfinitePay pages (challenge). Export them to PDF or ingest scraped HTML -> converted text -> chunks.
+- Suggested InfinitePay pages (challenge). Export them to PDF or ingest scraped HTML, then convert the text to chunks.
 - The ingestion pipeline is generic; any text/PDF can be onboarded.
 
 ### 3) Customer Support Agent
@@ -252,7 +255,7 @@ Seeded sample users
 
 Example questions
 
-- "Why I am not able to make transfers?" -> Explains KYC pending; offers to open a ticket.
+- "Why am I not able to make transfers?" -> Explains KYC pending; offers to open a ticket.
 - "I can't sign in to my account." -> Detects login disabled/many failed attempts; advises steps; offers ticket creation.
 - "Qual é meu saldo disponível?" -> Returns balance, holds, and available balance in BRL.
 - "Tenho tickets abertos?" -> Lists open/pending tickets with id + subject.
@@ -267,7 +270,7 @@ Example questions
 
 2. Parse
 
-- PyMuPDF reads pages -> text is extracted. You can extend with OCR fallback if needed.
+- PyMuPDF reads pages -> text is extracted. You can extend with OCR fallback if you need to.
 
 3. Chunk
 
@@ -283,7 +286,7 @@ Example questions
 - The collection includes:
   - text (VarChar with analyzer enabled),
   - vector (FloatVector 1536),
-  - sparse_vector (SparseFloatVector) automatically generated from text via BM25 function.
+  - sparse_vector (SparseFloatVector) automatically generated from text via the BM25 function.
 
 6. Search (Hybrid)
 
@@ -455,7 +458,7 @@ Agents: customer support, transfer issue
 ```
 curl -s -X POST http://localhost:8000/agents/run \
   -H "Content-Type: application/json" \
-  -d '{"message":"Why I am not able to make transfers?", "user_id":"client123"}' | jq
+  -d '{"message":"Why am I not able to make transfers?", "user_id":"client123"}' | jq
 ```
 
 RAG: upload PDFs
